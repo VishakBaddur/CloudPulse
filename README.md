@@ -144,6 +144,15 @@ Raw output: `benchmarks/results/benchmark-*.json`. Reproduce with:
 python -m benchmarks.run_benchmark --burst-size 20000 --concurrency 2 5 10 --rates 100 250
 ```
 
+### CloudWatch dashboard
+
+The 100K run (around 16:55 UTC) and the benchmark bursts (17:05 to 17:20 UTC) on the dashboard Terraform creates.
+The DLQ stays at zero throughout.
+
+![CloudWatch dashboard](docs/dashboard.png)
+
+![Queue depth and Lambda concurrency](docs/dashboard-queues.png)
+
 ## Project layout
 
 | Path | Contents |
