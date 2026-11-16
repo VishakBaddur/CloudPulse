@@ -1,3 +1,4 @@
 boto3>=1.35
 pytest>=8.0
 moto[sqs,dynamodb,cloudwatch]>=5.0
+terraform-local>=0.20

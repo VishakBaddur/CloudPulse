@@ -81,3 +81,9 @@ variable "log_retention_days" {
   type    = number
   default = 7
 }
+
+variable "enable_monitoring" {
+  description = "Create CloudWatch alarms and the dashboard (disabled on LocalStack)"
+  type        = bool
+  default     = true
+}

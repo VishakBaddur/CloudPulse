@@ -1,9 +1,13 @@
+# Alarms and the dashboard are skipped on LocalStack, whose CloudWatch
+# emulation cannot read alarms back. They are always created on AWS.
 locals {
   ns  = "CloudPulse"
   dim = ["Service", local.function_name]
 }
 
 resource "aws_cloudwatch_metric_alarm" "dlq_not_empty" {
+  count = var.enable_monitoring ? 1 : 0
+
   alarm_name          = "${var.project}-dlq-not-empty"
   alarm_description   = "Messages have landed in the dead-letter queue"
   namespace           = "AWS/SQS"
@@ -18,6 +22,8 @@ resource "aws_cloudwatch_metric_alarm" "dlq_not_empty" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "ingest_backlog_age" {
+  count = var.enable_monitoring ? 1 : 0
+
   alarm_name          = "${var.project}-ingest-backlog-age"
   alarm_description   = "Oldest message in the ingest queue is older than 5 minutes"
   namespace           = "AWS/SQS"
@@ -32,6 +38,8 @@ resource "aws_cloudwatch_metric_alarm" "ingest_backlog_age" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "retry_rate" {
+  count = var.enable_monitoring ? 1 : 0
+
   alarm_name          = "${var.project}-retry-rate"
   alarm_description   = "Sustained retryable processing errors"
   namespace           = local.ns
@@ -46,6 +54,8 @@ resource "aws_cloudwatch_metric_alarm" "retry_rate" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "p99_latency" {
+  count = var.enable_monitoring ? 1 : 0
+
   alarm_name          = "${var.project}-p99-latency"
   alarm_description   = "p99 end-to-end latency above 5 seconds"
   namespace           = local.ns
@@ -60,6 +70,8 @@ resource "aws_cloudwatch_metric_alarm" "p99_latency" {
 }
 
 resource "aws_cloudwatch_dashboard" "main" {
+  count = var.enable_monitoring ? 1 : 0
+
   dashboard_name = var.project
 
   dashboard_body = jsonencode({

@@ -1,0 +1,13 @@
+# Local AWS emulator for development and integration tests.
+services:
+  localstack:
+    image: localstack/localstack:4.12
+    container_name: cloudpulse-localstack
+    ports:
+      - "127.0.0.1:4566:4566"
+    environment:
+      - SERVICES=sqs,dynamodb,lambda,logs,cloudwatch,iam,sts
+      - LAMBDA_RUNTIME_ENVIRONMENT_TIMEOUT=60
+    volumes:
+      # Lets LocalStack start real Lambda runtime containers.
+      - /var/run/docker.sock:/var/run/docker.sock

@@ -30,3 +30,6 @@ benchmarks/results/*.json
 # Secrets
 .env
 *.pem
+
+# tflocal generated override
+infra/localstack_providers_override.tf
