@@ -107,7 +107,42 @@ Loss and duplicates are checked by `loadgen/verify.py`: every expected `event_id
 
 ## Results
 
-Results from the AWS deployment (100K event run, throughput and p95/p99 latency benchmarks) will be added here.
+Measured on AWS in us-east-2: Lambda arm64 with 256 MB, Python 3.13, SQS batch size 10.
+
+### 100K event run
+
+100,000 synthetic events were sent by 32 producer threads in 16.5 s (about 6,000 events/s into SQS).
+The pipeline drained them in 264 s with Lambda concurrency capped at 10, then `loadgen/verify.py`
+checked every event_id and the aggregate counters.
+
+| Expected | Stored | Missing | Unexpected | Double counted |
+|---|---|---|---|---|
+| 100,000 | 100,000 | 0 | 0 | 0 |
+
+Raw output: `benchmarks/results/aws100k-verify.json`
+
+### Throughput and latency
+
+| Scenario | Lambda concurrency | Events | Throughput (events/s) | p50 (ms) | p95 (ms) | p99 (ms) |
+|---|---|---|---|---|---|---|
+| Burst, 20K at once | 2 | 20,000 | 66.4 | 143,622 | 281,942 | 294,263 |
+| Burst, 20K at once | 5 | 20,000 | 160.3 | 58,666 | 113,844 | 118,609 |
+| Burst, 20K at once | 10 | 20,000 | 414.0 | 20,482 | 40,934 | 42,900 |
+| Steady 100 events/s for 60 s | 10 | 6,000 | 100.1 | 38 | 83 | 106 |
+| Steady 250 events/s for 60 s | 10 | 15,000 | 249.8 | 50 | 108 | 156 |
+
+- Latency is measured for every event, from the SQS `SentTimestamp` to the DynamoDB commit (`processed_at`).
+- **Burst** rows measure throughput. Their latency is mostly time spent waiting in the queue, which shows the
+  backlog being absorbed without loss. Throughput scales almost linearly with concurrency: 66, 160 and 414 events/s.
+- **Steady** rows send below capacity, so their latency is true processing latency: p99 of 156 ms at 250 events/s.
+- The `EndToEndLatencyMs` CloudWatch metric agrees with the exact values (at 250 events/s: p95 125 ms vs 108 ms,
+  p99 173 ms vs 156 ms; CloudWatch percentiles are approximate).
+
+Raw output: `benchmarks/results/benchmark-*.json`. Reproduce with:
+
+```bash
+python -m benchmarks.run_benchmark --burst-size 20000 --concurrency 2 5 10 --rates 100 250
+```
 
 ## Project layout
 
@@ -148,10 +183,16 @@ python -m pytest tests/integration -v
 ## Deploying to AWS
 
 ```bash
+aws login --profile cloudpulse      # temporary credentials, no access keys
+source scripts/aws-env.sh           # profile and region for CLI, boto3 and Terraform
 cd infra
 terraform workspace select default
 terraform init
-terraform apply
+terraform apply -var-file=envs/aws.tfvars
 ```
 
-This uses the default settings: arm64 Lambda, fault injection off, alarms and dashboard on. Everything is on-demand or within the AWS free tier at this scale. Remove it with `terraform destroy`.
+This uses arm64 Lambda, fault injection off, and creates the alarms and dashboard.
+The region is `us-east-2` because this account is an AWS project sandbox whose guardrail policy
+only allows regional services in the project's home region; change `envs/aws.tfvars` for other accounts.
+At this scale everything is on-demand or within the free tier. Remove it with
+`terraform destroy -var-file=envs/aws.tfvars`.

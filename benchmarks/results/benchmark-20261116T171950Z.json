@@ -1,0 +1,132 @@
+{
+  "generated_at": "20261116T171950Z",
+  "results": [
+    {
+      "scenario": "burst-c2",
+      "run_id": "bb2x135c20",
+      "expected": 20000,
+      "processed": 20000,
+      "duration_s": 301.4,
+      "throughput_eps": 66.4,
+      "latency_ms": {
+        "p50": 143622,
+        "p95": 281942,
+        "p99": 294263,
+        "max": 297666
+      },
+      "window": [
+        1794848690803,
+        1794848992210
+      ],
+      "lambda_concurrency": 2,
+      "send_rate_eps": 5270.0,
+      "cloudwatch_latency_ms": {
+        "p99": 293853,
+        "p50": 115835,
+        "p95": 278694
+      }
+    },
+    {
+      "scenario": "burst-c5",
+      "run_id": "bb5xf5674b",
+      "expected": 20000,
+      "processed": 20000,
+      "duration_s": 124.7,
+      "throughput_eps": 160.3,
+      "latency_ms": {
+        "p50": 58666,
+        "p95": 113844,
+        "p99": 118609,
+        "max": 119827
+      },
+      "window": [
+        1794849037131,
+        1794849161874
+      ],
+      "lambda_concurrency": 5,
+      "send_rate_eps": 4022.4,
+      "cloudwatch_latency_ms": {
+        "p99": 117865,
+        "p50": 27694,
+        "p95": 109914
+      }
+    },
+    {
+      "scenario": "burst-c10",
+      "run_id": "bb10x40f6ce",
+      "expected": 20000,
+      "processed": 20000,
+      "duration_s": 48.3,
+      "throughput_eps": 414.0,
+      "latency_ms": {
+        "p50": 20482,
+        "p95": 40934,
+        "p99": 42900,
+        "max": 43410
+      },
+      "window": [
+        1794849201772,
+        1794849250084
+      ],
+      "lambda_concurrency": 10,
+      "send_rate_eps": 3986.9,
+      "cloudwatch_latency_ms": {
+        "p99": 42769,
+        "p50": 13878,
+        "p95": 40379
+      }
+    },
+    {
+      "scenario": "steady-100eps",
+      "run_id": "bs100xc081ad",
+      "expected": 6000,
+      "processed": 6000,
+      "duration_s": 60.0,
+      "throughput_eps": 100.1,
+      "latency_ms": {
+        "p50": 38,
+        "p95": 83,
+        "p99": 106,
+        "max": 254
+      },
+      "window": [
+        1794849276757,
+        1794849336724
+      ],
+      "lambda_concurrency": 10,
+      "target_rate_eps": 100,
+      "actual_send_rate_eps": 100.1,
+      "cloudwatch_latency_ms": {
+        "p99": 42830,
+        "p50": 69,
+        "p95": 40668
+      }
+    },
+    {
+      "scenario": "steady-250eps",
+      "run_id": "bs250xf7021f",
+      "expected": 15000,
+      "processed": 15000,
+      "duration_s": 60.1,
+      "throughput_eps": 249.8,
+      "latency_ms": {
+        "p50": 50,
+        "p95": 108,
+        "p99": 156,
+        "max": 295
+      },
+      "window": [
+        1794849366524,
+        1794849426580
+      ],
+      "lambda_concurrency": 10,
+      "target_rate_eps": 250,
+      "actual_send_rate_eps": 250.0,
+      "cloudwatch_latency_ms": {
+        "p99": 173,
+        "p50": 66,
+        "p95": 125
+      }
+    }
+  ]
+}

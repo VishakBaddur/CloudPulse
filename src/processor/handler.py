@@ -138,6 +138,10 @@ def write_event(event, record, clients, settings):
     }
     if event["attributes"]:
         item["attributes"] = {"S": json.dumps(event["attributes"], sort_keys=True)}
+    sent_ts = record.get("attributes", {}).get("SentTimestamp")
+    if sent_ts:
+        # When SQS accepted the message, used to measure end-to-end latency.
+        item["sqs_sent_at"] = {"N": str(int(sent_ts))}
 
     transact_items = [
         {

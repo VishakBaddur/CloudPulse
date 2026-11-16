@@ -73,6 +73,23 @@ def send_events(events, url, concurrency=16, sqs=None):
     return send_bodies([json.dumps(e) for e in events], url, concurrency, sqs)
 
 
+def send_paced(events, url, rate, concurrency=16, sqs=None):
+    """Send events at a steady rate (events per second). Returns (sent, seconds)."""
+    sqs = sqs or sqs_client(concurrency)
+    batches = list(_chunks([json.dumps(e) for e in events], SQS_BATCH_LIMIT))
+    interval = SQS_BATCH_LIMIT / rate
+    started = time.perf_counter()
+    futures = []
+    with ThreadPoolExecutor(max_workers=concurrency) as pool:
+        for i, batch in enumerate(batches):
+            delay = started + i * interval - time.perf_counter()
+            if delay > 0:
+                time.sleep(delay)
+            futures.append(pool.submit(send_batch, sqs, url, batch))
+        sent = sum(f.result() for f in futures)
+    return sent, time.perf_counter() - started
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--count", type=int, default=1000)

@@ -27,6 +27,7 @@ def test_single_event_is_stored_with_all_fields(sqs, ddb, stack, run_id):
     assert int(item["timestamp"]["N"]) == ev["timestamp"]
     assert item["sqs_message_id"]["S"] == msg_id
     assert int(item["expires_at"]["N"]) > int(item["processed_at"]["N"]) // 1000
+    assert int(item["sqs_sent_at"]["N"]) <= int(item["processed_at"]["N"])
 
 
 def test_aggregate_is_created_for_event(sqs, ddb, stack, run_id):
