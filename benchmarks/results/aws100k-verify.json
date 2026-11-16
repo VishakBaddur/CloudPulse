@@ -1,0 +1,12 @@
+{
+  "run_id": "aws100k",
+  "expected": 100000,
+  "stored": 100000,
+  "missing": 0,
+  "unexpected": 0,
+  "aggregate_total": 100000,
+  "double_counted": 0,
+  "ok": true,
+  "missing_sample": [],
+  "verify_seconds": 1.4
+}

@@ -20,7 +20,6 @@ dist/
 *.zip
 
 # Benchmark raw output
-benchmarks/results/*.json
 
 # OS / editor
 .DS_Store
