@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  terraform:
+    name: Terraform fmt and validate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.17.2"
+          terraform_wrapper: false
+
+      - run: terraform fmt -check -recursive
+      - run: terraform init -backend=false -input=false
+      - run: terraform validate
+
+  integration:
+    name: Integration tests (LocalStack)
+    runs-on: ubuntu-latest
+    needs: terraform
+    timeout-minutes: 30
+    env:
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_DEFAULT_REGION: us-east-1
+      AWS_ENDPOINT_URL: http://localhost:4566
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.17.2"
+          terraform_wrapper: false
+
+      - name: Start LocalStack
+        run: |
+          docker compose up -d
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:4566/_localstack/health | grep -q '"lambda": "available"'; then
+              echo "LocalStack is ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose logs
+          exit 1
+
+      - name: Deploy stack to LocalStack
+        working-directory: infra
+        run: |
+          tflocal init -input=false
+          tflocal apply -var-file=envs/local.tfvars -var lambda_architecture=x86_64 -auto-approve -input=false
+
+      - name: Run integration tests
+        run: python -m pytest tests/integration -v --durations=10 --junitxml=test-results.xml
+
+      - name: LocalStack logs
+        if: failure()
+        run: docker compose logs --tail 300
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: test-results.xml

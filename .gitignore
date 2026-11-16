@@ -33,3 +33,4 @@ benchmarks/results/*.json
 
 # tflocal generated override
 infra/localstack_providers_override.tf
+test-results.xml
